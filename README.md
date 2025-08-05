@@ -45,16 +45,48 @@ npm run preview
 ## Technology Stack
 
 - **Frontend**: Vanilla JavaScript with Vite
-- **Database**: Dexie (IndexedDB wrapper) for client-side storage
+- **Database**: Supabase (PostgreSQL) for cloud storage
 - **Styling**: CSS with modern features
 - **Build Tool**: Vite
 
-## Database Schema
+## Database Setup
 
-The app uses a local IndexedDB database with the following structure:
+### Supabase Configuration
+
+1. Create a new project on [Supabase](https://supabase.com/)
+2. Copy your project URL and anon key
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Update the `.env` file with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=https://your-project-id.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+### Database Schema
+
+Create the following table in your Supabase database:
+
+```sql
+CREATE TABLE registrations (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Enable Row Level Security (optional)
+ALTER TABLE registrations ENABLE ROW LEVEL SECURITY;
+
+-- Create a policy to allow public access for this demo
+CREATE POLICY "Allow public access" ON registrations
+FOR ALL USING (true);
+```
 
 ### Registrations Table
 - `id`: Auto-incrementing primary key
 - `name`: User's name (string)
 - `email`: User's email (string)
-- `timestamp`: Registration timestamp (ISO string)
+- `timestamp`: Registration timestamp (timestamptz)

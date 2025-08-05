@@ -1,9 +1,9 @@
 import './style.css'
-import { Database } from './database.js'
+import { SupabaseDatabase } from './supabase.js'
 
 class CountdownApp {
   constructor() {
-    this.db = new Database()
+    this.db = new SupabaseDatabase()
     this.targetDate = new Date('2025-12-31T23:59:59').getTime()
     this.countdownDisplay = document.getElementById('countdown-display')
     this.registrationForm = document.getElementById('registration-form')
@@ -13,10 +13,15 @@ class CountdownApp {
   }
 
   async init() {
-    await this.db.init()
-    this.startCountdown()
-    this.setupEventListeners()
-    await this.loadRegistrations()
+    try {
+      await this.db.init()
+      this.startCountdown()
+      this.setupEventListeners()
+      await this.loadRegistrations()
+    } catch (error) {
+      console.error('Failed to initialize app:', error)
+      this.showError('Failed to connect to database. Please check your Supabase configuration.')
+    }
   }
 
   startCountdown() {
@@ -66,10 +71,10 @@ class CountdownApp {
       await this.db.addRegistration(registration)
       await this.loadRegistrations()
       
-      alert('Registration successful!')
+      this.showSuccess('Registration successful!')
     } catch (error) {
       console.error('Registration failed:', error)
-      alert('Registration failed. Please try again.')
+      this.showError('Registration failed. Please try again.')
     }
   }
 
@@ -89,6 +94,42 @@ class CountdownApp {
         <div class="registration-time">${new Date(reg.timestamp).toLocaleString()}</div>
       </div>
     `).join('')
+  }
+
+  showError(message) {
+    // Create error display if it doesn't exist
+    let errorDiv = document.getElementById('error-message')
+    if (!errorDiv) {
+      errorDiv = document.createElement('div')
+      errorDiv.id = 'error-message'
+      errorDiv.className = 'error-message'
+      document.body.insertBefore(errorDiv, document.body.firstChild)
+    }
+    errorDiv.textContent = message
+    errorDiv.style.display = 'block'
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      errorDiv.style.display = 'none'
+    }, 5000)
+  }
+
+  showSuccess(message) {
+    // Create success display if it doesn't exist
+    let successDiv = document.getElementById('success-message')
+    if (!successDiv) {
+      successDiv = document.createElement('div')
+      successDiv.id = 'success-message'
+      successDiv.className = 'success-message'
+      document.body.insertBefore(successDiv, document.body.firstChild)
+    }
+    successDiv.textContent = message
+    successDiv.style.display = 'block'
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      successDiv.style.display = 'none'
+    }, 3000)
   }
 }
 
